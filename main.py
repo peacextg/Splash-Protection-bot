@@ -24,7 +24,7 @@ async def main():
     API_HASH = os.environ["API_HASH"]
     BOT_TOKEN = os.environ["BOT_TOKEN"]
     LOGGER_GROUP = int(os.environ.get("LOGGER_GROUP", "0"))
-    GITHUB_TOKEN = os.environ["GITHUB_TOKEN"]
+    GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
     GIST_ID = os.environ.get("GIST_ID")
     MAX_USERBOTS = int(os.environ.get("MAX_USERBOTS", "5"))
     SESSION_STRING = os.environ.get("SESSION_STRING")
@@ -179,6 +179,8 @@ async def main():
         return text, InlineKeyboardMarkup(buttons)
 
     async def gist_request(method, url, json_data=None):
+        if not GITHUB_TOKEN:
+            return None
         async with httpx.AsyncClient() as cl:
             headers = {
                 "Authorization": f"Bearer {GITHUB_TOKEN}",
