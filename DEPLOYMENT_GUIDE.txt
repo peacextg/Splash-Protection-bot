@@ -1,0 +1,273 @@
+================================================================
+  TELEGRAM MEDIA CLEANER USERBOT — FULL DEPLOYMENT GUIDE
+================================================================
+
+TABLE OF CONTENTS
+-----------------
+1. Prerequisites
+2. Getting Telegram API Credentials
+3. Creating the Bot on Telegram
+4. Creating a GitHub Personal Access Token
+5. Setting Up Git & Pushing to GitHub
+6. Deploying on Render
+7. First Run & Configuration
+8. Using the Bot (Commands)
+9. Troubleshooting
+10. File Reference
+
+================================================================
+1. PREREQUISITES
+================================================================
+
+Before starting, make sure you have:
+- A Telegram account
+- A GitHub account (free)
+- A Render account (free at https://render.com)
+- Git installed on your computer (https://git-scm.com)
+
+================================================================
+2. GETTING TELEGRAM API CREDENTIALS
+================================================================
+
+Telegram requires API credentials to let your userbot connect.
+
+Step 1: Go to https://my.telegram.org/apps
+Step 2: Log in with your Telegram phone number
+Step 3: Click "Create Application" if you don't have one
+Step 4: Fill in any App title and Short name (doesn't matter)
+Step 5: Copy the following two values:
+   - App api_id     (a number, e.g. 1234567)
+   - App api_hash   (a long string, e.g. "abc123def456")
+
+Keep these safe — they're like a password to your Telegram account.
+
+================================================================
+3. CREATING THE BOT ON TELEGRAM
+================================================================
+
+This userbot uses a master bot to control it. You create this bot
+through BotFather.
+
+Step 1: Open Telegram and search for @BotFather
+Step 2: Send /newbot
+Step 3: Follow the prompts:
+   - Bot name: anything (e.g., "Media Cleaner Bot")
+   - Bot username: must end in "bot" (e.g., "MediaCleanerBot")
+Step 4: BotFather will give you a token like:
+   123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11
+Step 5: Copy this token — you'll need it later.
+
+================================================================
+4. CREATING A GITHUB PERSONAL ACCESS TOKEN
+================================================================
+
+This token lets the bot save user session strings to a private
+GitHub Gist, so connected accounts persist across restarts.
+
+Step 1: Go to https://github.com/settings/tokens
+Step 2: Click "Generate new token (classic)"
+Step 3: Give it a name (e.g., "media-cleaner-gist")
+Step 4: Under "Scopes", check ONLY: gist
+Step 5: Scroll down and click "Generate token"
+Step 6: COPY the token immediately (starts with ghp_...)
+       GitHub will never show it again!
+
+================================================================
+5. SETTING UP GIT & PUSHING TO GITHUB
+================================================================
+
+Step 1: Open PowerShell/Terminal in the project folder
+
+Step 2: Initialize Git:
+   git init
+   git add .
+   git commit -m "Initial commit"
+
+Step 3: Go to https://github.com/new
+   - Repository name: media-cleaner (or anything)
+   - Visibility: PRIVATE (important!)
+   - Do NOT add README, .gitignore, or license
+   - Click "Create repository"
+
+Step 4: Connect your local repo to GitHub:
+   git remote add origin https://github.com/YOUR_USERNAME/media-cleaner.git
+   git branch -M main
+   git push -u origin main
+
+   (Replace YOUR_USERNAME with your actual GitHub username)
+
+Step 5: Enter your GitHub username and password when prompted.
+   (Use the Personal Access Token from step 4 as the password)
+
+================================================================
+6. DEPLOYING ON RENDER
+================================================================
+
+Step 1: Log in to https://dashboard.render.com
+
+Step 2: Click "New +" -> "Web Service"
+
+Step 3: Connect GitHub:
+   - Click "Connect GitHub" if not already connected
+   - Authorize Render to access your repos
+   - Select the "media-cleaner" repo
+
+Step 4: Fill in the service details:
+   ┌─────────────────────────────────────────────────────┐
+   │ Name:         media-cleaner                         │
+   │ Region:       (choose closest to you)               │
+   │ Branch:       main                                   │
+   │ Runtime:      Python 3                               │
+   │ Build Command: pip install -r requirements.txt       │
+   │ Start Command: python main.py                        │
+   │ Plan:         Free                                   │
+   └─────────────────────────────────────────────────────┘
+
+Step 5: Click "Advanced" and add Environment Variables:
+
+   ┌─────────────────────────┬──────────────────────────────┐
+   │ Key                     │ Value                        │
+   ├─────────────────────────┼──────────────────────────────┤
+   │ API_ID                  │ Your API ID from step 2       │
+   │ API_HASH                │ Your API hash from step 2     │
+   │ BOT_TOKEN               │ Your bot token from step 3    │
+   │ GITHUB_TOKEN            │ Your GitHub token from step 4 │
+   ├─────────────────────────┼──────────────────────────────┤
+   │ Optional:                                                │
+   ├─────────────────────────┼──────────────────────────────┤
+   │ MAX_USERBOTS            │ 5 (default, max users)        │
+   │ PORT                    │ 8080 (default)                │
+   └─────────────────────────┴──────────────────────────────┘
+
+Step 6: Click "Create Web Service"
+
+Step 7: Wait 2-3 minutes for the build and deploy. Watch the
+        "Logs" tab for progress. You should see:
+   - "=== Media Cleaner v2 (whitelist) starting ==="
+   - "Starting bot..."
+   - "Bot started!"
+   - "Your service is live 🎉"
+
+Step 8: After first deploy, add these OPTIONAL env vars from
+        the logs (for faster restarts):
+   - SESSION_STRING: copy from the log line "SESSION_STRING=..."
+   - GIST_ID: copy from "Created Gist with ID: ..."
+   - PUBLIC_URL: set to https://your-service.onrender.com
+     (your service URL, shown in Render dashboard)
+
+   To add them: Render Dashboard -> Your Service -> Environment
+   -> Add Environment Variable -> Save Changes
+   (This triggers a new deploy automatically)
+
+================================================================
+7. FIRST RUN & CONFIGURATION
+================================================================
+
+Step 1: Open Telegram and find your bot (the one from BotFather)
+
+Step 2: Send /start to the bot — you should get a welcome message
+
+Step 3: Send /connect to link your Telegram account
+   - The bot will ask for your phone number
+   - Send your number in international format: +1234567890
+   - You'll receive a login code on Telegram
+   - Send the code to the bot (numbers only)
+   - If you have 2FA enabled, enter your cloud password
+
+Step 4: Once connected, you need to select which groups to clean:
+   - Send /groups to see all your chats with buttons
+   - Click "Select" next to groups you want to clean
+   - Click "Deselect" to remove a group
+   - Use ◀ Prev / Next ▶ to navigate pages
+   - Click "Close" when done
+
+Step 5: Send /scan to start cleaning selected groups
+
+Step 6: (Optional) Set up auto-scan:
+   - Send /autoscan 30 to scan every 30 minutes
+   - Send /autoscan 0 or /stop_auto to disable
+
+================================================================
+8. BOT COMMANDS
+================================================================
+
+┌─────────────────┬──────────────────────────────────────────┐
+│ Command         │ Description                              │
+├─────────────────┼──────────────────────────────────────────┤
+│ /start          │ Show welcome message and command list     │
+│ /connect        │ Link your Telegram account                │
+│ /groups         │ Browse and select groups to clean         │
+│ /selected       │ Show your currently selected groups       │
+│ /scan           │ Start cleaning media in selected groups   │
+│ /stop           │ Stop the current cleanup                  │
+│ /autoscan <min> │ Auto-clean every N minutes (0 = disable) │
+│ /stop_auto      │ Disable auto-scan                        │
+│ /status         │ Show stats and current status             │
+└─────────────────┴──────────────────────────────────────────┘
+
+What gets deleted:
+- Photos, videos, documents, audio files, voice messages
+- GIFs (animations), video notes, stickers
+Only messages you have permission to delete:
+- Your own messages (anywhere)
+- Anyone's messages (if you're admin with delete permission)
+
+================================================================
+9. TROUBLESHOOTING
+================================================================
+
+PROBLEM: Bot not responding to /start or commands
+  Check: Render logs for errors
+  Fix:   The keepalive should keep it awake. If not responding,
+         visit https://your-service.onrender.com in browser
+         to wake Render's free tier.
+
+PROBLEM: "No groups selected" when running /scan
+  Fix:   Use /groups to select groups first. Selections are
+         saved across restarts.
+
+PROBLEM: "SESSION_STRING=..." in logs
+  Fix:   Add this as an env var in Render dashboard so the
+         master bot doesn't re-authenticate on every restart.
+
+PROBLEM: "Created Gist with ID: ..."
+  Fix:   Add GIST_ID as an env var so connected user sessions
+         persist across restarts.
+
+PROBLEM: "Gist API error 401/403"
+  Fix:   Your GITHUB_TOKEN is invalid or missing the "gist"
+         scope. Generate a new token at GitHub settings.
+
+PROBLEM: "Flood wait" errors
+  Fix:   Pyrogram handles this automatically with
+         sleep_threshold=600. It will pause and retry.
+
+PROBLEM: "Peer id invalid" in logs
+  Fix:   This is normal. Pyrogram recovers automatically.
+
+PROBLEM: Bot was working but stopped after some time
+  Fix:   Check if PUBLIC_URL env var is set correctly.
+         The keepalive task pings every 10 min to prevent
+         Render's free tier from sleeping.
+
+================================================================
+10. FILE REFERENCE
+================================================================
+
+Files in the project folder:
+
+┌──────────────────┬─────────────────────────────────────────┐
+│ File             │ Purpose                                 │
+├──────────────────┼─────────────────────────────────────────┤
+│ main.py          │ Main bot code (deploy this)             │
+│ requirements.txt │ Python package dependencies             │
+│ render.yaml      │ Render infrastructure config (optional) │
+│ runtime.txt      │ Python version pin                      │
+│ .python-version  │ Python version (alternative)            │
+│ .env.example     │ Template for env vars (local testing)   │
+│ DEPLOYMENT_GUIDE │ This file                               │
+└──────────────────┴─────────────────────────────────────────┘
+
+================================================================
+  END OF GUIDE
+================================================================

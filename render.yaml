@@ -1,0 +1,25 @@
+services:
+  - type: worker
+    name: telegram-media-cleaner
+    env: python
+    pythonVersion: 3.11.0
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    healthCheckPath: /
+    envVars:
+      - key: API_ID
+        sync: false
+      - key: API_HASH
+        sync: false
+      - key: BOT_TOKEN
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: GIST_ID
+        sync: false
+      - key: LOGGER_GROUP
+        value: "0"
+      - key: MAX_USERBOTS
+        value: "5"
+      - key: PORT
+        value: "8080"
